@@ -1,7 +1,7 @@
 <template>
   <div class="onboarding-step">
     <h2>Business Information</h2>
-    <form @submit.prevent="handleSubmit" class="form-container">
+    <Form :validation-schema="validationSchema" @submit="handleSubmit" class="form-container">
      <br/> 
      <div class="document-upload">
         <div class="document-preview" v-if="documentPreviewUrl">
@@ -46,43 +46,55 @@
 
       <div class="form-group">
         <label for="businessName">Business Name</label>
-        <input
+        <Field
+          name="businessName"
           type="text"
           id="businessName"
           v-model="businessName"
           required
-          class="form-input"
+          :class="{ 'error': errors.businessName }"
         />
+        <ErrorMessage name="businessName" class="error-message" />
       </div>
-
       <div class="form-group">
         <label for="industry">Industry</label>
-        <select id="industry" v-model="industry" required class="form-input">
+        <Field
+          name="industry"
+          as="select"
+          id="industry"
+          v-model="industry"
+          :class="{ error: errors.industry }"
+          required
+        >
           <option value="">Select Industry</option>
           <option
-            v-for="industry in industries"
-            :key="industry"
-            :value="industry"
+            v-for="industryOption in industries"
+            :key="industryOption"
+            :value="industryOption"
           >
-            {{ industry }}
+            {{ industryOption }}
           </option>
-        </select>
+        </Field>
+        <ErrorMessage name="industry" class="error-message" />
       </div>
 
       <div class="form-group">
         <label for="companySize">Company Size</label>
-        <select
-          id="companySize"
+        <Field
+          name="companySize"
+          as="select"
           v-model="companySize"
+          :class="{ 'error': errors.companySize }"
+          id="companySize"
           required
-          class="form-input"
         >
           <option value="">Select Company Size</option>
-          <option value="1-10">1-10 employees</option>
-          <option value="11-50">11-50 employees</option>
-          <option value="51-200">51-200 employees</option>
+          <option value="1-10">1–10 employees</option>
+          <option value="11-50">11–50 employees</option>
+          <option value="51-200">51–200 employees</option>
           <option value="201+">201+ employees</option>
-        </select>
+        </Field>
+        <ErrorMessage name="companySize" class="error-message" />
       </div>
 
       <div class="form-actions">
@@ -91,13 +103,16 @@
         </button>
         <button type="submit" class="next-button">Next</button>
       </div>
-    </form>
+    </Form>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, watch } from "vue";
 import { useOnboardingStore } from "../stores/onboarding";
+import { Form, Field, ErrorMessage } from "vee-validate";
+import * as zod from 'zod';
+import { toTypedSchema } from '@vee-validate/zod';
 
 const store = useOnboardingStore();
 const emit = defineEmits(["update:businessInfo", "next", "previous"]);
@@ -125,7 +140,11 @@ const industries = [
   "Legal",
   "Real Estate",
 ];
-
+const errors = ref({
+  businessName: '',
+  industry: '',
+  companySize: '',
+})
 const businessName = ref(props.businessInfo.companyName);
 const businessLogo = ref(props.businessInfo.businessLogo);
 const logoPreviewUrl = ref<string | null>(null);
@@ -182,6 +201,18 @@ const handleDocumentUpload = (event: Event) => {
   }
 };
 
+const validationSchema = toTypedSchema(
+  zod.object({
+    businessName: zod.string().min(2, 'Business name must be at least 2 characters long'),
+    industry: zod.string().min(2, 'Industry must be at least 2 characters long'),
+    companySize: zod.enum(['1-10', '11-50', '51-200', '201+'], {
+      errorMap: () => ({ message: 'Please select a company size' })
+    }),
+    // businessLogo: zod.optional(),
+    // document: zod.optional(),
+  })
+);
+
 const handleSubmit = () => {
   emit("update:businessInfo", {
     companyName: businessName.value,
@@ -199,6 +230,16 @@ const handlePrevious = () => {
 </script>
 
 <style scoped>
+
+.error-message {
+  color: #ff4444;
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+  padding: 0.25rem;
+  background-color: rgba(255, 68, 68, 0.1);
+  border-radius: 4px;
+}
+
 .onboarding-step {
   max-width: 800px;
   width: 50vw;
