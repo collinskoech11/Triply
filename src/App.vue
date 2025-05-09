@@ -74,7 +74,6 @@ watch(() => store.isSubmitted, (submitted) => {
       <div class="progress-bar">
         <div class="progress" :style="{ width: `${(store.currentStep / 3) * 100}%` }"></div>
       </div>
-      <pre>{{ store.currentStep }}</pre>
       <div class="step-content">
         <OnboardingStep1
           v-if="store.currentStep === 1"
@@ -109,6 +108,13 @@ watch(() => store.isSubmitted, (submitted) => {
 </template>
 
 <style scoped>
+
+.error-message {
+  color: #ff4444;
+  font-size: 0.9rem;
+  margin-top: 0.5rem;
+}
+
 .app-container {
   min-height: 100vh !important;
   width:100vw;

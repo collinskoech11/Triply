@@ -2,6 +2,48 @@
   <div class="onboarding-step">
     <h2>Business Information</h2>
     <form @submit.prevent="handleSubmit" class="form-container">
+     <br/> 
+     <div class="document-upload">
+        <div class="document-preview" v-if="documentPreviewUrl">
+          <div class="document-icon">📄</div>
+          <div class="document-info">
+            <span class="document-name">{{ documentName }}</span>
+            <span class="document-size">{{ documentSize }}</span>
+          </div>
+        </div>
+        <label class="upload-label" for="document">
+          <span v-if="!documentPreviewUrl"
+            >Upload Documents (PDF only, max 5MB)</span
+          >
+          <span v-else>Change Documents</span>
+        </label>
+        <input
+          type="file"
+          id="document"
+          accept=".pdf"
+          @change="handleDocumentUpload"
+          class="file-input"
+        />
+      </div>
+      <div class="business-logo-container">
+        <label class="upload-label" for="businessLogo">
+          <span v-if="!logoPreviewUrl">Upload Business Logo</span>
+          <span v-else>Change Business Logo</span>
+        </label>
+        <div class="logo-preview" v-if="logoPreviewUrl">
+          <img :src="logoPreviewUrl" alt="Business Logo Preview" />
+        </div>
+        <input
+          type="file"
+          id="businessLogo"
+          accept="image/*"
+          @change="handleLogoUpload"
+          class="file-input"
+        />
+      </div>
+
+
+
       <div class="form-group">
         <label for="businessName">Business Name</label>
         <input
@@ -13,33 +55,15 @@
         />
       </div>
 
-      <div class="business-logo-container">
-        <div class="logo-preview" v-if="logoPreviewUrl">
-          <img :src="logoPreviewUrl" alt="Business Logo Preview" />
-        </div>
-        <label class="upload-label" for="businessLogo">
-          <span v-if="!logoPreviewUrl">Upload Business Logo</span>
-          <span v-else>Change Business Logo</span>
-        </label>
-        <input
-          type="file"
-          id="businessLogo"
-          accept="image/*"
-          @change="handleLogoUpload"
-          class="file-input"
-        />
-      </div>
-
       <div class="form-group">
         <label for="industry">Industry</label>
-        <select
-          id="industry"
-          v-model="industry"
-          required
-          class="form-input"
-        >
+        <select id="industry" v-model="industry" required class="form-input">
           <option value="">Select Industry</option>
-          <option v-for="industry in industries" :key="industry" :value="industry">
+          <option
+            v-for="industry in industries"
+            :key="industry"
+            :value="industry"
+          >
             {{ industry }}
           </option>
         </select>
@@ -61,29 +85,10 @@
         </select>
       </div>
 
-      <div class="document-upload">
-        <div class="document-preview" v-if="documentPreviewUrl">
-          <div class="document-icon">📄</div>
-          <div class="document-info">
-            <span class="document-name">{{ documentName }}</span>
-            <span class="document-size">{{ documentSize }}</span>
-          </div>
-        </div>
-        <label class="upload-label" for="document">
-          <span v-if="!documentPreviewUrl">Upload Documents (PDF only, max 5MB)</span>
-          <span v-else>Change Documents</span>
-        </label>
-        <input
-          type="file"
-          id="document"
-          accept=".pdf"
-          @change="handleDocumentUpload"
-          class="file-input"
-        />
-      </div>
-
       <div class="form-actions">
-        <button type="button" @click="store.previousStep()" class="prev-button">Previous</button>
+        <button type="button" @click="store.previousStep()" class="prev-button">
+          Previous
+        </button>
         <button type="submit" class="next-button">Next</button>
       </div>
     </form>
@@ -91,100 +96,106 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue'
-import { useOnboardingStore } from '../stores/onboarding'
+import { ref, watch } from "vue";
+import { useOnboardingStore } from "../stores/onboarding";
 
-const store = useOnboardingStore()
-const emit = defineEmits(['update:businessInfo', 'next', 'previous'])
+const store = useOnboardingStore();
+const emit = defineEmits(["update:businessInfo", "next", "previous"]);
 
 const props = defineProps<{
   businessInfo: {
-    companyName: string
-    industry: string
-    employees: number
-    businessLogo?: File
-    document?: File
-  }
-}>()
+    companyName: string;
+    industry: string;
+    employees: number;
+    businessLogo?: File;
+    document?: File;
+  };
+}>();
 
 // Mock industries data
 const industries = [
-  'Technology',
-  'Healthcare',
-  'Finance',
-  'Education',
-  'Retail',
-  'Manufacturing',
-  'Consulting',
-  'Marketing',
-  'Legal',
-  'Real Estate'
-]
+  "Technology",
+  "Healthcare",
+  "Finance",
+  "Education",
+  "Retail",
+  "Manufacturing",
+  "Consulting",
+  "Marketing",
+  "Legal",
+  "Real Estate",
+];
 
-const businessName = ref(props.businessInfo.companyName)
-const businessLogo = ref(props.businessInfo.businessLogo)
-const logoPreviewUrl = ref<string | null>(null)
-const industry = ref(props.businessInfo.industry)
-const companySize = ref(`${props.businessInfo.employees}-${props.businessInfo.employees + 50}`)
-const document = ref(props.businessInfo.document)
-const documentPreviewUrl = ref<string | null>(null)
-const documentName = ref('')
-const documentSize = ref('')
+const businessName = ref(props.businessInfo.companyName);
+const businessLogo = ref(props.businessInfo.businessLogo);
+const logoPreviewUrl = ref<string | null>(null);
+const industry = ref(props.businessInfo.industry);
+const companySize = ref(
+  `${props.businessInfo.employees}-${props.businessInfo.employees + 50}`
+);
+const document = ref(props.businessInfo.document);
+const documentPreviewUrl = ref<string | null>(null);
+const documentName = ref("");
+const documentSize = ref("");
 
-watch(() => props.businessInfo, (newInfo) => {
-  businessName.value = newInfo.companyName
-  businessLogo.value = newInfo.businessLogo
-  industry.value = newInfo.industry
-  companySize.value = `${newInfo.employees}-${newInfo.employees + 50}`
-  document.value = newInfo.document
-}, { deep: true })
+watch(
+  () => props.businessInfo,
+  (newInfo) => {
+    businessName.value = newInfo.companyName;
+    businessLogo.value = newInfo.businessLogo;
+    industry.value = newInfo.industry;
+    companySize.value = `${newInfo.employees}-${newInfo.employees + 50}`;
+    document.value = newInfo.document;
+  },
+  { deep: true }
+);
 
 const handleLogoUpload = (event: Event) => {
-  const target = event.target as HTMLInputElement
+  const target = event.target as HTMLInputElement;
   if (target.files && target.files[0]) {
-    businessLogo.value = target.files[0]
-    logoPreviewUrl.value = URL.createObjectURL(target.files[0])
-    emit('update:businessInfo', {
+    businessLogo.value = target.files[0];
+    logoPreviewUrl.value = URL.createObjectURL(target.files[0]);
+    emit("update:businessInfo", {
       ...props.businessInfo,
-      businessLogo: target.files[0]
-    })
+      businessLogo: target.files[0],
+    });
   }
-}
+};
 
 const handleDocumentUpload = (event: Event) => {
-  const target = event.target as HTMLInputElement
+  const target = event.target as HTMLInputElement;
   if (target.files && target.files[0]) {
-    const file = target.files[0]
-    if (file.type === 'application/pdf' && file.size <= 5 * 1024 * 1024) {
-      document.value = file
-      documentPreviewUrl.value = URL.createObjectURL(file)
-      documentName.value = file.name
-      documentSize.value = `${(file.size / 1024 / 1024).toFixed(2)} MB`
-      emit('update:businessInfo', {
+    const file = target.files[0];
+    if (file.type === "application/pdf" && file.size <= 5 * 1024 * 1024) {
+      document.value = file;
+      documentPreviewUrl.value = URL.createObjectURL(file);
+      documentName.value = file.name;
+      documentSize.value = `${(file.size / 1024 / 1024).toFixed(2)} MB`;
+      emit("update:businessInfo", {
         ...props.businessInfo,
-        document: file
-      })
+        document: file,
+      });
     } else {
-      alert('Please upload a PDF file that is less than 5MB')
-      target.value = ''
+      alert("Please upload a PDF file that is less than 5MB");
+      target.value = "";
     }
   }
-}
+};
 
 const handleSubmit = () => {
-  emit('update:businessInfo', {
+  emit("update:businessInfo", {
     companyName: businessName.value,
     industry: industry.value,
-    employees: parseInt(companySize.value.split('-')[0]) || 0,
+    employees: parseInt(companySize.value.split("-")[0]) || 0,
     businessLogo: businessLogo.value,
-    document: document.value
-  })
-  emit('next')
-}
+    document: document.value,
+  });
+  emit("next");
+};
 
 const handlePrevious = () => {
-  emit('previous')
-}
+  emit("previous");
+};
 </script>
 
 <style scoped>
@@ -230,7 +241,7 @@ label {
 }
 
 .business-logo-container {
-  text-align: center;
+  /* text-align: center; */
   margin-bottom: 2rem;
 }
 
@@ -336,17 +347,17 @@ label {
   .onboarding-step {
     padding: 1.5rem;
   }
-  
+
   .logo-preview {
     width: 120px;
     height: 120px;
   }
-  
+
   .document-preview {
     flex-direction: column;
     align-items: flex-start;
   }
-  
+
   .document-icon {
     margin-right: 0;
     margin-bottom: 0.5rem;

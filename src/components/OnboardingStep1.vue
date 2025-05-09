@@ -1,67 +1,76 @@
 <template>
   <div class="onboarding-step">
     <h2>Personal Information</h2>
-    <div class="form-container">
+    <Form :validation-schema="validationSchema" @submit="handleSubmit" class="form-container">
+      <div class="form-group">
+        <div v-if="previewUrl" class="preview-container">
+          <img :src="previewUrl" alt="Profile Preview" />
+        </div>
+        <label for="profilePicture">Profile Picture</label>
+        <Field
+          name="profilePicture"
+          type="file"
+          id="profilePicture"
+          accept="image/*"
+          @change="handleFileUpload"
+        />
+        <ErrorMessage name="profilePicture" class="error-message" />
+      </div>
+
       <div class="form-group">
         <label for="fullName">Full Name</label>
-        <input
+        <Field
+          name="fullName"
           type="text"
           id="fullName"
           v-model="fullName"
           placeholder="Enter your full name"
           :class="{ 'error': errors.fullName }"
         />
-        <div v-if="errors.fullName" class="error-message">{{ errors.fullName }}</div>
+        <ErrorMessage name="fullName" class="error-message" />
       </div>
       
       <div class="form-group">
         <label for="email">Email</label>
-        <input
+        <Field
+          name="email"
           type="email"
           id="email"
           v-model="email"
           placeholder="Enter your email"
           :class="{ 'error': errors.email }"
         />
-        <div v-if="errors.email" class="error-message">{{ errors.email }}</div>
+        <ErrorMessage name="email" class="error-message" />
       </div>
       
       <div class="form-group">
         <label for="phone">Phone</label>
-        <input
+        <Field
+          name="phone"
           type="tel"
           id="phone"
           v-model="phone"
           placeholder="Enter your phone number"
           :class="{ 'error': errors.phone }"
         />
-        <div v-if="errors.phone" class="error-message">{{ errors.phone }}</div>
+        <ErrorMessage name="phone" class="error-message" />
       </div>
 
-      <div class="form-group">
-        <label for="profilePicture">Profile Picture</label>
-        <input
-          type="file"
-          id="profilePicture"
-          accept="image/*"
-          @change="handleFileUpload"
-        />
-        <div v-if="previewUrl" class="preview-container">
-          <img :src="previewUrl" alt="Profile Preview" />
-        </div>
-      </div>
+
 
       <div class="form-buttons">
-        <button @click="handleSubmit">Next</button>
+        <button type="submit">Next</button>
       </div>
-    </div>
+    </Form>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, watch, computed, onMounted } from 'vue'
 import { personalInfoSchema } from '../types'
-import { z } from 'zod'
+import * as zod from 'zod';
+import { useField, Form, Field, ErrorMessage } from 'vee-validate';
+import { toTypedSchema } from '@vee-validate/zod';
 
 const props = defineProps<{
   personalInfo: {
@@ -113,11 +122,22 @@ const handleFileUpload = (event: Event) => {
   const target = event.target as HTMLInputElement
   if (target.files && target.files[0]) {
     const file = target.files[0]
+    
     previewUrl.value = URL.createObjectURL(file)
-    emit('update:personalInfo', {
-      ...props.personalInfo,
-      profilePicture: file
-    })
+    
+    const reader = new FileReader()
+    reader.onload = () => {
+      const base64String = reader.result as string
+      
+      const field = useField('profilePicture')
+      field.setValue(base64String)
+      
+      emit('update:personalInfo', {
+        ...props.personalInfo,
+        profilePicture: base64String
+      })
+    }
+    reader.readAsDataURL(file)
   }
 }
 
@@ -129,6 +149,15 @@ const isFormValid = computed(() => {
     profilePicture: previewUrl.value || '',
   }).success
 })
+
+const validationSchema = toTypedSchema(
+  zod.object({
+    fullName: zod.string().min(2, 'Full name must be at least 2 characters long'),
+    email: zod.string().email('Invalid email address'),
+    phone: zod.string().min(10, 'Phone number must be at least 10 characters long'),
+    // profilePicture: zod.optional()
+  })
+);
 
 const handleSubmit = () => {
   emit('update:personalInfo', {
