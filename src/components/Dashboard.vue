@@ -1,7 +1,14 @@
 <template>
   <div class="dashboard">
     <div class="dashboard-header">
-      <!-- <button class="back-button" @click="handleBack">← Back</button> -->
+      <div class="form-actions">
+        <button class="prev-button" @click="handleBack">
+           Back
+        </button>
+        <button class="next-button" @click="showClearDialog = true">
+          Clear Data
+        </button> 
+      </div>
       <div class="user-info">
         <div class="profile-image">
           <img v-if="store.personalInfo.profilePicture" :src="store.personalInfo.profilePicture" alt="Profile" />
@@ -68,15 +75,29 @@
         </div>
       </div>
     </div>
+
+    <!-- Clear Confirmation Dialog -->
+    <div v-if="showClearDialog" class="clear-dialog">
+      <div class="dialog-content">
+        <h3>Clear All Data</h3>
+        <p>Are you sure you want to clear all onboarding data? This action cannot be undone.</p>
+        <div class="dialog-buttons">
+          <button class="cancel-button" @click="showClearDialog = false">Cancel</button>
+          <button class="clear-confirm-button" @click="clearAllData">Clear</button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { useOnboardingStore } from '../stores/onboarding'
 
 const store = useOnboardingStore()
 const emit = defineEmits(['back'])
+
+const showClearDialog = ref(false)
 
 const initials = computed(() => {
   const name = store.personalInfo.fullName
@@ -89,29 +110,69 @@ const initials = computed(() => {
     : ''
 })
 
+const clearAllData = () => {
+  // Clear localStorage
+  localStorage.removeItem('onboardingState')
+  
+  // Reset the store
+  store.reset()
+  
+  // Navigate back to the first step
+  emit('back')
+  
+  showClearDialog.value = false
+}
+
 const handleBack = () => {
   emit('previous')
 }
 </script>
 
 <style scoped>
-.back-button {
-  position: absolute;
-  top: 1rem;
-  left: 1rem;
-  background: none;
-  border: none;
-  color: #42b883;
-  font-size: 1rem;
-  cursor: pointer;
-  padding: 0.5rem 1rem;
-  border-radius: 4px;
-  transition: all 0.2s ease;
+@import "@fortawesome/fontawesome-free/css/all.css";
+
+.form-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
 }
 
-.back-button:hover {
-  background: rgba(66, 184, 131, 0.1);
-  color: #38a169;
+.prev-button,
+.next-button {
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: background-color 0.3s ease;
+}
+
+.prev-button {
+  background-color: #f5f7fa;
+  color: #333;
+  border: 1px solid #ddd;
+}
+
+.prev-button:hover {
+  background-color: #e9ecef;
+}
+
+.next-button {
+  background-color: #dc3545;
+  color: white;
+}
+
+.next-button:hover {
+  background-color: #c82333;
+}
+
+.prev-button i,
+.next-button i {
+  font-size: 1rem;
 }
 
 .dashboard {
@@ -218,112 +279,71 @@ h3 {
   color: #999;
   font-style: italic;
 }
-</style>
 
-
-
-<style scoped>
-.dashboard {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 2rem;
-}
-
-.dashboard-header {
-  text-align: center;
-  margin-bottom: 3rem;
-}
-
-.user-info {
+.clear-dialog {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
   display: flex;
-  align-items: center;
   justify-content: center;
-  gap: 1.5rem;
-  margin-top: 1.5rem;
-}
-
-.profile-image {
-  width: 100px;
-  height: 100px;
-  border-radius: 50%;
-  overflow: hidden;
-  display: flex;
   align-items: center;
-  justify-content: center;
-  background: #42b883;
-  color: white;
-  font-weight: bold;
-  font-size: 2rem;
+  z-index: 1000;
 }
 
-.profile-image img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.user-details h2 {
-  margin: 0;
-  font-size: 1.5rem;
-}
-
-.user-details p {
-  margin: 0.25rem 0 0;
-  color: #666;
-}
-
-.dashboard-content {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 2rem;
-}
-
-.dashboard-section {
+.dialog-content {
   background: white;
-  border-radius: 12px;
-  padding: 1.5rem;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  padding: 2rem;
+  border-radius: 8px;
+  max-width: 400px;
+  width: 90%;
+  text-align: center;
 }
 
-h3 {
-  margin: 0 0 1rem;
+.dialog-content h3 {
   color: #333;
+  margin-bottom: 1rem;
 }
 
-.info-card {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.info-item {
-  display: flex;
-  gap: 1rem;
-  align-items: center;
-}
-
-.label {
+.dialog-content p {
   color: #666;
-  font-weight: 500;
+  margin-bottom: 1.5rem;
 }
 
-.value {
+.dialog-buttons {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.cancel-button,
+.clear-confirm-button {
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1rem;
   flex: 1;
+}
+
+.cancel-button {
+  background: #f8f9fa;
   color: #333;
+  border: 1px solid #dee2e6;
 }
 
-.value.verified {
-  color: #42b883;
+.cancel-button:hover {
+  background: #e9ecef;
 }
 
-.logo-preview {
-  max-width: 100px;
-  max-height: 100px;
-  object-fit: contain;
+.clear-confirm-button {
+  background: #dc3545;
+  color: white;
 }
 
-.no-logo {
-  color: #999;
-  font-style: italic;
+.clear-confirm-button:hover {
+  background: #c82333;
 }
 </style>

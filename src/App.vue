@@ -72,7 +72,7 @@ watch(() => store.isSubmitted, (submitted) => {
   <div class="app-container">
     <div class="onboarding-wrapper">
       <div class="progress-bar">
-        <div class="progress" :style="{ width: `${(store.currentStep / 3) * 100}%` }"></div>
+        <div class="progress" :style="{ width: `${(store.currentStep / 3) * 100}%`, maxWidth: '100%' }"></div>
       </div>
       <div class="step-content">
         <OnboardingStep1

@@ -40,7 +40,12 @@ export const useOnboardingStore = defineStore('onboarding', {
   state: () => {
     const savedState = localStorage.getItem('onboardingState')
     if (savedState) {
-      return JSON.parse(savedState)
+      const parsedState = JSON.parse(savedState)
+      // Ensure isSubmitted is a boolean
+      return {
+        ...parsedState,
+        isSubmitted: !!parsedState.isSubmitted
+      }
     }
     return {
       currentStep: 1,
@@ -62,6 +67,7 @@ export const useOnboardingStore = defineStore('onboarding', {
         address: ''
       },
       isVerified: false,
+      isSubmitted: false,
       isLoading: false,
       error: null as string | null
     }
@@ -93,6 +99,7 @@ export const useOnboardingStore = defineStore('onboarding', {
         address: ''
       }
       this.isVerified = false
+      this.isSubmitted = false
       this.isLoading = false
       this.error = null
       this.saveToLocalStorage()
@@ -136,7 +143,7 @@ export const useOnboardingStore = defineStore('onboarding', {
         this.isSubmitted = true
         this.isLoading = false
         this.saveToLocalStorage()
-      }, 1000)
+      }, 3000)
     },
 
     updatePersonalInfo(info: PersonalInfo) {

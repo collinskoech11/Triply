@@ -102,7 +102,10 @@
         <button type="button" @click="store.previousStep()" class="prev-button">
           Previous
         </button>
-        <button type="submit" class="next-button">Next</button>
+        <button type="submit" class="next-button" :disabled="isLoading">
+          <LoadingSpinner v-if="isLoading" message="Processing..." />
+          <span v-else>Submit</span>
+        </button>
       </div>
     </Form>
   </div>
@@ -114,6 +117,7 @@ import { useOnboardingStore } from "../stores/onboarding";
 import { Form, Field, ErrorMessage } from "vee-validate";
 import * as zod from 'zod';
 import { toTypedSchema } from '@vee-validate/zod';
+import LoadingSpinner from './LoadingSpinner.vue';
 
 const store = useOnboardingStore();
 const emit = defineEmits(["update:businessInfo", "next", "previous"]);
@@ -128,7 +132,7 @@ const props = defineProps<{
   };
 }>();
 
-// Mock industries data
+const isLoading = ref(false);
 const industries = [
   "Technology",
   "Healthcare",
@@ -214,15 +218,23 @@ const validationSchema = toTypedSchema(
   })
 );
 
-const handleSubmit = () => {
-  emit("update:businessInfo", {
-    companyName: businessName.value,
-    industry: industry.value,
-    employees: parseInt(companySize.value.split("-")[0]) || 0,
-    businessLogo: businessLogo.value,
-    document: document.value,
+const handleSubmit = async (values: any) => {
+  isLoading.value = true;
+  
+  // Simulate loading for 3 seconds
+  await new Promise(resolve => setTimeout(resolve, 3000));
+  
+  // Update store with form values
+  store.updateBusinessInfo({
+    companyName: values.businessName,
+    industry: values.industry,
+    employees: parseInt(values.companySize.split('-')[0])
   });
-  emit("next");
+  
+  // Emit next step
+  emit('next');
+  
+  isLoading.value = false;
 };
 
 const handlePrevious = () => {
@@ -383,6 +395,11 @@ label {
 
 .next-button:hover {
   background-color: #35a570;
+}
+
+.next-button:disabled {
+  background-color: #a0d9b3;
+  cursor: not-allowed;
 }
 
 @media (max-width: 768px) {

@@ -1,8 +1,11 @@
 <template>
-  <div class="onboarding-step">
+  <div class="onboarding-step" style="text-align:center">
     <h2>Verification & Summary</h2>
 
     <div class="verification-section" v-if="!isVerified">
+      <button class="back-button" @click="handlePrevious">
+        <i class="fas fa-arrow-left"></i> Back
+      </button>
       <div class="verification-container">
         <h3>Email Verification</h3>
         <p>We've sent a verification code to your email address:</p>
@@ -24,15 +27,11 @@
 
     <div class="summary-section" v-else>
       <div class="summary-container">
-        <div class="success-message" v-if="isSubmitted">
-          <h3 :class="{ 'animate-success': isSubmitted }" style="color: #42b883; font-size: 1rem;">Success!</h3>
+        <div v-if="isSubmitted" class="success-message-card">
+          <h3 class="success-title">Success!</h3>
           <p>Your information has been successfully submitted.</p>
           <p>We'll be in touch soon!</p>
-          <button @click="finishOnboarding" class="finish-button">
-            Finish
-          </button>
         </div>
-        <br/>
         <div class="summary-card">
           <div class="summary-section">
             <h4>Personal Information</h4>
@@ -62,24 +61,45 @@
             </div>
             <div class="summary-item">
               <span class="label">Company Size:</span>
-              <span class="value"
-                >{{ store.businessInfo.employees }}+ employees</span
-              >
+              <span class="value">{{ store.businessInfo.employees }}+ employees</span>
             </div>
           </div>
         </div>
-        <br/>
         <div class="submission-section">
-          <button
-            v-if="!isSubmitted"
-            class="finish-button"
-            @click="submitData"
-            :disabled="!isVerified || isLoading"
-          >
-            <LoadingSpinner v-if="isLoading" message="Submitting data..." />
-            <span v-else>Submit Data</span>
-          </button>
+          <div class="form-actions">
+            <button type="button" @click="handlePrevious" class="prev-button">
+              Previous
+            </button>
+            <div v-if="!isSubmitted" class="submit-section">
+              <button
+                type="button"
+                class="verify-button"
+                @click="submitData"
+                :disabled="!isVerified || isLoading"
+              >
+                <LoadingSpinner v-if="isLoading" message="Submitting data..." />
+                <span v-else>Submit Data</span>
+              </button>
+            </div>
+            <div v-else class="restart-section">
+              <button type="button" @click="showRestartDialog = true" class="next-button">
+                Restart
+              </button>
+            </div>
+          </div>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Restart Confirmation Dialog -->
+  <div v-if="showRestartDialog" class="clear-dialog">
+    <div class="dialog-content">
+      <h3>Restart Onboarding</h3>
+      <p>Are you sure you want to restart the onboarding process? This will clear all your data and start fresh.</p>
+      <div class="dialog-buttons">
+        <button class="cancel-button" @click="showRestartDialog = false">Cancel</button>
+        <button class="clear-confirm-button" @click="restartOnboarding">Restart</button>
       </div>
     </div>
   </div>
@@ -101,6 +121,7 @@ const props = defineProps<{
 }>();
 
 const verificationCode = ref("");
+const showRestartDialog = ref(false)
 
 watch(
   () => props.isVerified,
@@ -135,9 +156,23 @@ const finishOnboarding = () => {
 const handlePrevious = () => {
   emit("previous");
 };
+
+const restartOnboarding = () => {
+  // Clear localStorage
+  localStorage.removeItem('onboardingState')
+  
+  // Reset the store
+  store.reset()
+  
+  // Navigate back to the first step
+  emit('previous')
+  
+  showRestartDialog.value = false
+}
 </script>
 
 <style scoped>
+@import "@fortawesome/fontawesome-free/css/all.css";
 .animate-success {
   animation: success 1s ease-in-out;
 }
@@ -253,19 +288,43 @@ const handlePrevious = () => {
   text-align: center;
 }
 
-.submit-button {
-  background-color: #42b883;
-  color: white;
+.form-actions {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 2rem;
+}
+
+.prev-button,
+.next-button {
+  padding: 0.75rem 1.5rem;
   border: none;
-  padding: 1rem 2rem;
-  border-radius: 8px;
-  font-size: 1.1rem;
+  border-radius: 4px;
   cursor: pointer;
+  font-size: 1rem;
   transition: background-color 0.3s ease;
 }
 
-.submit-button:hover {
-  background-color: #35a570;
+.prev-button {
+  background-color: #f5f7fa;
+  color: #333;
+  border: 1px solid #ddd;
+}
+
+.prev-button:hover {
+  background-color: #e9ecef;
+}
+
+.next-button {
+  background-color: #dc3545;
+  color: white;
+}
+
+.next-button:hover {
+  background-color: #c82333;
+}
+
+.next-button i {
+  font-size: 1rem;
 }
 
 .success-section {
@@ -301,6 +360,126 @@ const handlePrevious = () => {
 
 .finish-button:hover {
   background-color: #35a570;
+}
+
+.back-button {
+  background: none;
+  border: none;
+  color: #42b883;
+  padding: 0.5rem 1rem;
+  font-size: 1rem;
+  cursor: pointer;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.back-button:hover {
+  color: #35a570;
+}
+
+.back-button i {
+  font-size: 1rem;
+}
+
+.clear-dialog {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.dialog-content {
+  background-color: white;
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.dialog-buttons {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 2rem;
+}
+
+.cancel-button {
+  background-color: #f5f7fa;
+  color: #333;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background-color 0.3s ease;
+}
+
+.cancel-button:hover {
+  background-color: #e9ecef;
+}
+
+.clear-confirm-button {
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background-color 0.3s ease;
+}
+
+.clear-confirm-button:hover {
+  background-color: #c82333;
+}
+.success-message-card {
+  background-color: #f0fdf4;
+  border-left: 6px solid #42b883;
+  border-radius: 8px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+  max-width: 500px;
+  margin: 2rem auto;
+  text-align: center;
+  animation: fadeIn 0.6s ease-out;
+}
+
+.success-title {
+  color: #42b883;
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  animation: popIn 0.4s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes popIn {
+  0% { transform: scale(0.8); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.submit-section,
+.restart-section {
+  flex: 1;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.submit-section {
+  margin-left: 1rem;
+}
+
+.restart-section {
+  margin-left: auto;
 }
 
 @media (max-width: 768px) {
