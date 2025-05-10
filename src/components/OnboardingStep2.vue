@@ -101,7 +101,8 @@
       </div>
 
       <div class="form-actions">
-        <button type="button" @click="store.previousStep()" class="prev-button">
+        <button type="button" @click="store.previousStep()" class="prev-button" style="background-color: #f5f7fa;
+  color: #333; border: 1px solid #ddd;">
           Previous
         </button>
         <button type="submit" class="next-button" :disabled="isLoading">
@@ -119,7 +120,7 @@ import { useOnboardingStore } from "../stores/onboarding";
 import { useField, Form, Field, ErrorMessage } from "vee-validate";
 import * as zod from 'zod';
 import { toTypedSchema } from '@vee-validate/zod';
-import LoadingSpinner from './LoadingSpinner.vue';
+import LoadingSpinner from './reusable/LoadingSpinner.vue';
 import { useFetch } from '@vueuse/core'
 import {useToast} from 'vue-toast-notification';
 import 'vue-toast-notification/dist/theme-sugar.css';
@@ -198,7 +199,11 @@ const handleLogoUpload = async (event: Event) => {
   if (target.files && target.files[0]) {
     const file = target.files[0]
     logoPreviewUrl.value = URL.createObjectURL(file);
-
+    if (file.type === "image/jpeg" || file.type === "image/png" && file.size <= 2 * 1024 * 1024) {
+      toast.success("Document validated");
+    } else {
+      toast.error("Please upload a valid image file that is less than 2MB");
+    }
     const reader = new FileReader()
     reader.onload = () => {
       const base64String = reader.result as string
@@ -286,185 +291,3 @@ const handlePrevious = () => {
   emit("previous");
 };
 </script>
-
-<style scoped>
-
-.error-message {
-  color: #ff4444;
-  font-size: 0.875rem;
-  margin-top: 0.25rem;
-  padding: 0.25rem;
-  background-color: rgba(255, 68, 68, 0.1);
-  border-radius: 4px;
-}
-
-.onboarding-step {
-  max-width: 800px;
-  width: 50vw;
-  margin: 0 auto;
-  padding: 2rem;
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-}
-
-.form-container {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-}
-
-.form-group {
-  margin-bottom: 1.5rem;
-}
-
-label {
-  display: block;
-  margin-bottom: 0.5rem;
-  font-weight: 500;
-  color: #333;
-}
-
-.form-input {
-  width: 100%;
-  padding: 0.75rem;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 1rem;
-  transition: border-color 0.3s ease;
-}
-
-.form-input:focus {
-  outline: none;
-  border-color: #42b883;
-}
-
-.business-logo-container {
-  /* text-align: center; */
-  margin-bottom: 2rem;
-}
-
-.logo-preview {
-  width: 150px;
-  height: 150px;
-  margin: 0 auto 1rem;
-  border-radius: 8px;
-  overflow: hidden;
-  background: #f5f7fa;
-}
-
-.logo-preview img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-}
-
-.document-preview {
-  display: flex;
-  align-items: center;
-  padding: 1rem;
-  background: #f5f7fa;
-  border-radius: 8px;
-  margin-bottom: 1rem;
-}
-
-.document-icon {
-  font-size: 2rem;
-  margin-right: 1rem;
-  color: #42b883;
-}
-
-.document-info {
-  flex: 1;
-}
-
-.document-name {
-  font-weight: 500;
-  color: #333;
-}
-
-.document-size {
-  font-size: 0.875rem;
-  color: #666;
-}
-
-.upload-label {
-  display: inline-block;
-  padding: 0.75rem 1.5rem;
-  background: #42b883;
-  color: white;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-}
-
-.upload-label:hover {
-  background: #35a570;
-}
-
-.file-input {
-  display: none;
-}
-
-.form-actions {
-  display: flex;
-  justify-content: space-between;
-  gap: 1rem;
-}
-
-.prev-button {
-  background-color: #e5e7eb;
-  color: #333;
-  border: none;
-  padding: 0.75rem 1.5rem;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 1rem;
-  transition: background-color 0.3s ease;
-}
-
-.prev-button:hover {
-  background-color: #d1d5db;
-}
-
-.next-button {
-  background-color: #42b883;
-  color: white;
-  border: none;
-  padding: 0.75rem 1.5rem;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 1rem;
-  transition: background-color 0.3s ease;
-}
-
-.next-button:hover {
-  background-color: #35a570;
-}
-
-.next-button:disabled {
-  background-color: #a0d9b3;
-  cursor: not-allowed;
-}
-
-@media (max-width: 768px) {
-  .onboarding-step {
-    padding: 1.5rem;
-  }
-
-  .logo-preview {
-    width: 120px;
-    height: 120px;
-  }
-
-  .document-preview {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .document-icon {
-    margin-right: 0;
-    margin-bottom: 0.5rem;
-  }
-}
-</style>

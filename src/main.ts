@@ -14,6 +14,10 @@ async function bootstrap() {
   app.use(createPinia())
   app.use(ToastPlugin)
   app.mount('#app')
+
+  if (import.meta.env.DEV) {
+    await setupWorker()
+  }
 }
 
 bootstrap()

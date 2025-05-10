@@ -1,33 +1,89 @@
-# triply-dashboard
+# Triply Dashboard
 
-This template should help get you started developing with Vue 3 in Vite.
+A multi-step onboarding flow built with Vue 3, TypeScript, and Vite.
 
-## Recommended IDE Setup
+## Development Process Overview
 
-[VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
+### Architecture
+- Vue 3 Composition API with TypeScript
+- Pinia for state management
+- VeeValidate for form validation
+- MSW (Mock Service Worker) for API mocking
+- Vitest for testing
+- TailwindCSS for styling
 
-## Type Support for `.vue` Imports in TS
+### Component Structure
+- Multi-step onboarding flow with navigation
+- Form validation using Zod schemas
+- File upload handling with validation
+- Responsive design with TailwindCSS
+- Toast notifications for user feedback
 
-TypeScript cannot handle type information for `.vue` imports by default, so we replace the `tsc` CLI with `vue-tsc` for type checking. In editors, we need [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) to make the TypeScript language service aware of `.vue` types.
+### State Management
+- Centralized store using Pinia
+- Persistent form data across steps
+- Clear and restart functionality
+- Form validation state management
 
-## Customize configuration
+### Form Validation
+- Zod schemas for robust validation
+- Real-time validation feedback
+- Custom validation rules for specific fields
+- File upload validation
 
-See [Vite Configuration Reference](https://vite.dev/config/).
+## API Mocking Implementation
 
-## Project Setup
+### MSW Setup
+- Implemented using Mock Service Worker (MSW)
+- Mock endpoints defined in `src/plugins/server/handlers`
+- Industry options endpoint with mock data
+- Support for both successful and failing responses
+- Development environment only (disabled in production)
+
+### Industry Options
+- Mock endpoint: `/api/industries`
+- Returns predefined list of industries
+- Simulates network delay
+- Handles error states
+- Type-safe responses using TypeScript interfaces
+
+### Testing
+- Vitest for unit testing
+- Testing Library for Vue component testing
+- Mock store setup for Pinia
+- File upload mocking
+- Form validation testing
+
+## Setup and Run
 
 ```sh
-npm install
+yarn
 ```
 
-### Compile and Hot-Reload for Development
+### Development
 
 ```sh
-npm run dev
+yarn dev
 ```
 
-### Type-Check, Compile and Minify for Production
+### Production Build
 
 ```sh
-npm run build
+yarn build
 ```
+
+### Running Unit Tests
+
+```sh
+yarn test
+```
+
+The test suite uses Vitest and includes:
+- Component rendering tests
+- Form validation tests
+- Store state management tests
+- User interaction tests
+- File upload handling tests
+- Error state tests
+
+Tests are automatically watched for changes during development.

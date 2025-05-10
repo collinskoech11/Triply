@@ -87,7 +87,7 @@
             </div>
             <div class="summary-item">
               <span class="label">Documents:</span>
-              <div class="preview-container">
+              <div class="document-preview-container">
                 <div v-if="store.businessInfo.document" class="document-preview" @click="showDocumentPreview">
                   <div class="document-icon">📄</div>
                   <div class="document-details">
@@ -156,7 +156,7 @@
 <script setup lang="ts">
 import { ref, watch, onMounted } from "vue";
 import { useOnboardingStore } from "../stores/onboarding";
-import LoadingSpinner from "./LoadingSpinner.vue";
+import LoadingSpinner from "./reusable/LoadingSpinner.vue";
 
 const store = useOnboardingStore();
 const emit = defineEmits(['previous', 'dashboard']);

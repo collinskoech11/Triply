@@ -137,6 +137,11 @@ const handleFileUpload = (event: Event) => {
     const file = target.files[0]
     
     previewUrl.value = URL.createObjectURL(file)
+    if (file.type === "image/jpeg" || file.type === "image/png" && file.size <= 2 * 1024 * 1024) {
+      toast.success("Document validated");
+    } else {
+      toast.error("Please upload a valid image file that is less than 2MB");
+    }
     
     const reader = new FileReader()
     reader.onload = () => {
@@ -168,7 +173,6 @@ const validationSchema = toTypedSchema(
     fullName: zod.string().min(2, 'Full name must be at least 2 characters long'),
     email: zod.string().email('Invalid email address'),
     phone: zod.string().min(10, 'Phone number must be at least 10 characters long'),
-    // profilePicture: zod.optional()
   })
 );
 
@@ -184,158 +188,5 @@ const handleSubmit = () => {
 </script>
 
 <style scoped>
-.onboarding-step {
-  max-width: 800px;
-  margin: 0 auto;
-  padding: 2rem;
-}
 
-.form-container {
-  max-width: 600px;
-  margin: 0 auto;
-}
-
-.form-group {
-  margin-bottom: 1.5rem;
-}
-
-.form-group label {
-  display: block;
-  margin-bottom: 0.5rem;
-  font-weight: 500;
-  color: #333;
-}
-
-.form-group input {
-  width: 100%;
-  padding: 0.75rem;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 1rem;
-  transition: all 0.2s ease;
-}
-
-.form-group input:focus {
-  outline: none;
-  border-color: #42b883;
-}
-
-.form-group input.error {
-  border-color: #ff4444;
-  background-color: rgba(255, 68, 68, 0.1);
-}
-
-.form-group input.error:focus {
-  outline: none;
-  box-shadow: 0 0 0 2px rgba(255, 68, 68, 0.2);
-}
-
-.error-message {
-  color: #ff4444;
-  font-size: 0.875rem;
-  margin-top: 0.25rem;
-  padding: 0.25rem;
-  background-color: rgba(255, 68, 68, 0.1);
-  border-radius: 4px;
-}
-
-.form-buttons {
-  display: flex;
-  justify-content: flex-end;
-  gap: 1rem;
-  margin-top: 2rem;
-}
-
-button:not(:disabled) {
-  background-color: #42b883;
-  color: white;
-  padding: 0.75rem 1.5rem;
-  border: none;
-  border-radius: 4px;
-  font-size: 1rem;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-button:not(:disabled):hover {
-  background-color: #38a169;
-}
-
-button:disabled {
-  background-color: #a0cfa0;
-  cursor: not-allowed;
-  color: #666;
-}
-
-.profile-picture-container {
-  text-align: center;
-  margin-bottom: 2rem;
-}
-
-.preview-container {
-  width: 150px;
-  height: 150px;
-  margin: 0 auto 1rem;
-  border-radius: 50%;
-  overflow: hidden;
-}
-
-.profile-preview {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.file-input {
-  display: none;
-}
-/* 
-  width: 100%;
-  padding: 0.75rem;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 1rem;
-  transition: border-color 0.3s ease;
-} */
-
-.form-input:focus {
-  outline: none;
-  border-color: #42b883;
-}
-
-.form-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 1rem;
-}
-
-.next-button {
-  background-color: #42b883;
-  color: white;
-  border: none;
-  padding: 0.75rem 1.5rem;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 1rem;
-  transition: background-color 0.3s ease;
-}
-
-.next-button:hover {
-  background-color: #35a570;
-}
-
-@media (max-width: 768px) {
-  .onboarding-step {
-    padding: 1.5rem;
-  }
-  
-  .profile-picture-container {
-    margin-bottom: 1.5rem;
-  }
-  
-  .preview-container {
-    width: 120px;
-    height: 120px;
-  }
-}
 </style>
