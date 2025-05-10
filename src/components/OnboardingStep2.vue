@@ -52,8 +52,9 @@
           id="businessName"
           v-model="businessName"
           required
-          :class="{ 'error': errors.businessName }"
-        />
+          :class="`form-input ${errors.businessName ? 'error' : ''}`"
+          />
+          <!-- :class="{ 'error': errors.businessName }" -->
         <ErrorMessage name="businessName" class="error-message" />
       </div>
       <div class="form-group">
@@ -63,7 +64,7 @@
           as="select"
           id="industry"
           v-model="industry"
-          :class="{ error: errors.industry }"
+          :class="`form-input ${errors.industry ? 'error' : ''}`"
           required
         >
           <option value="">Select Industry</option>
@@ -84,7 +85,7 @@
           name="companySize"
           as="select"
           v-model="companySize"
-          :class="{ 'error': errors.companySize }"
+          :class="`form-input ${errors.companySize ? 'error' : ''}`"
           id="companySize"
           required
         >

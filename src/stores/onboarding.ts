@@ -37,31 +37,42 @@ interface OnboardingState {
 }
 
 export const useOnboardingStore = defineStore('onboarding', {
-  state: () => ({
-    currentStep: 1,
-    personalInfo: {
-      fullName: '',
-      email: '',
-      phone: '',
-      profilePicture: '',
-      password: '',
-      confirmPassword: ''
-    },
-    businessInfo: {
-      companyName: '',
-      industry: '',
-      employees: 0,
-      businessLogo: '',
-      website: '',
-      description: '',
-      address: ''
-    },
-    isVerified: false,
-    isLoading: false,
-    error: null as string | null
-  }),
+  state: () => {
+    const savedState = localStorage.getItem('onboardingState')
+    if (savedState) {
+      return JSON.parse(savedState)
+    }
+    return {
+      currentStep: 1,
+      personalInfo: {
+        fullName: '',
+        email: '',
+        phone: '',
+        profilePicture: '',
+        password: '',
+        confirmPassword: ''
+      },
+      businessInfo: {
+        companyName: '',
+        industry: '',
+        employees: 0,
+        businessLogo: '',
+        website: '',
+        description: '',
+        address: ''
+      },
+      isVerified: false,
+      isLoading: false,
+      error: null as string | null
+    }
+  },
 
   actions: {
+    saveToLocalStorage() {
+      localStorage.setItem('onboardingState', JSON.stringify(this.$state))
+      console.log("Saved to local storage", localStorage.getItem('onboardingState'))
+    },
+
     reset() {
       this.currentStep = 1
       this.personalInfo = {
@@ -84,6 +95,7 @@ export const useOnboardingStore = defineStore('onboarding', {
       this.isVerified = false
       this.isLoading = false
       this.error = null
+      this.saveToLocalStorage()
     },
 
     validatePersonalInfo(info: any) {
@@ -106,12 +118,14 @@ export const useOnboardingStore = defineStore('onboarding', {
     nextStep() {
       if (this.currentStep < 3) {
         this.currentStep++
+        this.saveToLocalStorage()
       }
     },
 
     previousStep() {
       if (this.currentStep > 1) {
         this.currentStep--
+        this.saveToLocalStorage()
       }
     },
 
@@ -121,15 +135,18 @@ export const useOnboardingStore = defineStore('onboarding', {
       setTimeout(() => {
         this.isSubmitted = true
         this.isLoading = false
+        this.saveToLocalStorage()
       }, 1000)
     },
 
     updatePersonalInfo(info: PersonalInfo) {
       this.personalInfo = info
+      this.saveToLocalStorage()
     },
 
     updateBusinessInfo(info: BusinessInfo) {
       this.businessInfo = info
+      this.saveToLocalStorage()
     },
 
     verifyIdentity(code: string) {
@@ -144,10 +161,12 @@ export const useOnboardingStore = defineStore('onboarding', {
           this.isLoading = false
           this.error = null
           toast.success('Identity verified successfully!')
+          this.saveToLocalStorage()
         } else {
           this.isLoading = false
           this.error = 'Invalid verification code'
           toast.error('Invalid verification code')
+          this.saveToLocalStorage()
         }
       }, 1000)
     }
