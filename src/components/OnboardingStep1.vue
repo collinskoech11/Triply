@@ -59,7 +59,7 @@
 
 
       <div class="form-buttons">
-        <button type="submit">Next</button>
+        <button type="submit">Save</button>
       </div>
     </Form>
   </div>
@@ -71,6 +71,7 @@ import { personalInfoSchema } from '../types'
 import * as zod from 'zod';
 import { useField, Form, Field, ErrorMessage } from 'vee-validate';
 import { toTypedSchema } from '@vee-validate/zod';
+import { useFetch } from '@vueuse/core'
 
 const props = defineProps<{
   personalInfo: {
@@ -80,6 +81,17 @@ const props = defineProps<{
     profilePicture: string
   }
 }>()
+
+const industries = ref([])
+
+const fetchIndustries = async () => {
+  try {
+    const { data } = await useFetch('/api/industries/products').json()
+    industries.value = data.value
+  } catch (error) {
+    console.log(error, "(*(*&))")
+  }
+}
 
 const emit = defineEmits(['update:personalInfo', 'next'])
 
@@ -95,7 +107,8 @@ const errors = ref({
 })
 
 // Initialize form with prop values
-onMounted(() => {
+onMounted(async () => {
+  await fetchIndustries()
   if (props.personalInfo) {
     fullName.value = props.personalInfo.fullName
     email.value = props.personalInfo.email

@@ -47,6 +47,17 @@
               <span class="label">Phone:</span>
               <span class="value">{{ store.personalInfo.phone }}</span>
             </div>
+            <div class="summary-item">
+              <span class="label">Profile Picture:</span>
+              <div class="preview-container">
+                <img v-if="store.personalInfo.profilePicture" 
+                     :src="store.personalInfo.profilePicture" 
+                     alt="Profile Picture"
+                     class="preview-image"
+                     style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover;" />
+                <span v-else>No profile picture uploaded</span>
+              </div>
+            </div>
           </div>
 
           <div class="summary-section">
@@ -62,6 +73,43 @@
             <div class="summary-item">
               <span class="label">Company Size:</span>
               <span class="value">{{ store.businessInfo.employees }}+ employees</span>
+            </div>
+            <div class="summary-item">
+              <span class="label">Business Logo:</span>
+              <div class="preview-container">
+                <img v-if="store.businessInfo.businessLogo" 
+                     :src="store.businessInfo.businessLogo" 
+                     alt="Business Logo"
+                     class="preview-image"
+                     style="width: 100px; height: 100px; object-fit: contain;" />
+                <span v-else>No business logo uploaded</span>
+              </div>
+            </div>
+            <div class="summary-item">
+              <span class="label">Documents:</span>
+              <div class="preview-container">
+                <div v-if="store.businessInfo.document" class="document-preview" @click="showDocumentPreview">
+                  <div class="document-icon">📄</div>
+                  <div class="document-details">
+                    <span class="document-name">{{ store.businessInfo.documentName }}</span>
+                    <span class="document-size">{{ store.businessInfo.documentSize }} MB</span>
+                  </div>
+                </div>
+
+                <!-- Document Preview Modal -->
+                <div v-if="showDocumentModal" class="document-modal">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <h3>{{ store.businessInfo.documentName }}</h3>
+                      <button @click="closeDocumentPreview" class="close-button">×</button>
+                    </div>
+                    <div class="pdf-viewer">
+                      <iframe :src="store.businessInfo.document" type="application/pdf" width="100%" height="600px"></iframe>
+                    </div>
+                  </div>
+                </div>
+                <!-- <span v-else>No documents uploaded</span> -->
+              </div>
             </div>
           </div>
         </div>
@@ -106,7 +154,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from "vue";
+import { ref, watch, onMounted } from "vue";
 import { useOnboardingStore } from "../stores/onboarding";
 import LoadingSpinner from "./LoadingSpinner.vue";
 
@@ -121,6 +169,7 @@ const props = defineProps<{
 }>();
 
 const verificationCode = ref("");
+const showDocumentModal = ref(false);
 const showRestartDialog = ref(false)
 
 watch(
@@ -131,6 +180,24 @@ watch(
     }
   }
 );
+
+const renderOTP = () => {
+  if(!props.isVerified){
+    alert("Your OTP code is 123456")
+  }
+}
+
+onMounted(() => {
+  renderOTP()
+})
+
+const showDocumentPreview = () => {
+  showDocumentModal.value = true;
+}
+
+const closeDocumentPreview = () => {
+  showDocumentModal.value = false;
+}
 
 const verifyCode = () => {
   // Simulate verification
@@ -186,6 +253,70 @@ const restartOnboarding = () => {
   100% {
     transform: scale(1);
   }
+}
+.document-preview{
+  display: flex;
+  margin-left:20px;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.document-preview:hover {
+  background-color: #f0f0f0;
+}
+
+.document-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  width: 90%;
+  max-width: 800px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.close-button {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  padding: 8px;
+  color: #666;
+}
+
+.close-button:hover {
+  color: #333;
+}
+
+.pdf-viewer {
+  flex: 1;
+  overflow: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 10px;
 }
 .onboarding-step {
   max-width: 800px;

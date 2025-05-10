@@ -17,7 +17,8 @@
           >
           <span v-else>Change Documents</span>
         </label>
-        <input
+        <Field
+          name="document"
           type="file"
           id="document"
           accept=".pdf"
@@ -33,7 +34,8 @@
         <div class="logo-preview" v-if="logoPreviewUrl">
           <img :src="logoPreviewUrl" alt="Business Logo Preview" />
         </div>
-        <input
+        <Field
+          name="businessLogo"
           type="file"
           id="businessLogo"
           accept="image/*"
@@ -70,10 +72,10 @@
           <option value="">Select Industry</option>
           <option
             v-for="industryOption in industries"
-            :key="industryOption"
-            :value="industryOption"
+            :key="industryOption.id"
+            :value="industryOption.name"
           >
-            {{ industryOption }}
+            {{ industryOption.name }}
           </option>
         </Field>
         <ErrorMessage name="industry" class="error-message" />
@@ -104,7 +106,7 @@
         </button>
         <button type="submit" class="next-button" :disabled="isLoading">
           <LoadingSpinner v-if="isLoading" message="Processing..." />
-          <span v-else>Submit</span>
+          <span v-else>Save</span>
         </button>
       </div>
     </Form>
@@ -112,16 +114,29 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from "vue";
+import { ref, watch, onMounted } from "vue";
 import { useOnboardingStore } from "../stores/onboarding";
-import { Form, Field, ErrorMessage } from "vee-validate";
+import { useField, Form, Field, ErrorMessage } from "vee-validate";
 import * as zod from 'zod';
 import { toTypedSchema } from '@vee-validate/zod';
 import LoadingSpinner from './LoadingSpinner.vue';
+import { useFetch } from '@vueuse/core'
+import {useToast} from 'vue-toast-notification';
+import 'vue-toast-notification/dist/theme-sugar.css';
+
+const toast = useToast();
 
 const store = useOnboardingStore();
 const emit = defineEmits(["update:businessInfo", "next", "previous"]);
+const industries = ref([])
 
+const fetchIndustries = async () => {
+    const { data } = await useFetch('/api/industries/products').json()
+    industries.value = data.value
+    if (!data.value) {
+      toast.error("failed to fetch industries")
+    }
+}
 const props = defineProps<{
   businessInfo: {
     companyName: string;
@@ -133,7 +148,7 @@ const props = defineProps<{
 }>();
 
 const isLoading = ref(false);
-const industries = [
+const industriesz = [
   "Technology",
   "Healthcare",
   "Finance",
@@ -145,6 +160,7 @@ const industries = [
   "Legal",
   "Real Estate",
 ];
+fetchIndustries()
 const errors = ref({
   businessName: '',
   industry: '',
@@ -173,36 +189,61 @@ watch(
   },
   { deep: true }
 );
-
-const handleLogoUpload = (event: Event) => {
+// onMounted(async () => {
+//   await fetchIndustries()
+// })
+const handleLogoUpload = async (event: Event) => {
+  await fetchIndustries()
   const target = event.target as HTMLInputElement;
   if (target.files && target.files[0]) {
-    businessLogo.value = target.files[0];
-    logoPreviewUrl.value = URL.createObjectURL(target.files[0]);
-    emit("update:businessInfo", {
-      ...props.businessInfo,
-      businessLogo: target.files[0],
-    });
+    const file = target.files[0]
+    logoPreviewUrl.value = URL.createObjectURL(file);
+
+    const reader = new FileReader()
+    reader.onload = () => {
+      const base64String = reader.result as string
+      
+      const field = useField('businessLogo')
+      field.setValue(base64String)
+      
+      emit('update:businessInfo', {
+        ...props.businessInfo,
+        businessLogo: base64String
+      })
+    }
+    reader.readAsDataURL(file)
   }
 };
 
-const handleDocumentUpload = (event: Event) => {
+const handleDocumentUpload = async (event: Event) => {
+  await fetchIndustries()
   const target = event.target as HTMLInputElement;
   if (target.files && target.files[0]) {
     const file = target.files[0];
+
+    documentPreviewUrl.value = URL.createObjectURL(file);
+    documentName.value = file.name;
+    documentSize.value = `${(file.size / 1024 / 1024).toFixed(2)} MB`;
+
     if (file.type === "application/pdf" && file.size <= 5 * 1024 * 1024) {
-      document.value = file;
-      documentPreviewUrl.value = URL.createObjectURL(file);
-      documentName.value = file.name;
-      documentSize.value = `${(file.size / 1024 / 1024).toFixed(2)} MB`;
-      emit("update:businessInfo", {
-        ...props.businessInfo,
-        document: file,
-      });
+      toast.success("Document validated");
     } else {
-      alert("Please upload a PDF file that is less than 5MB");
-      target.value = "";
+      toast.error("Please upload a PDF file that is less than 5MB");
     }
+
+    const reader = new FileReader()
+    reader.onload = () => {
+      const base64String = reader.result as string
+      
+      const field = useField('document')
+      field.setValue(base64String)
+      
+      emit('update:businessInfo', {
+        ...props.businessInfo,
+        document: base64String
+      })
+    }
+    reader.readAsDataURL(file)
   }
 };
 
@@ -228,7 +269,11 @@ const handleSubmit = async (values: any) => {
   store.updateBusinessInfo({
     companyName: values.businessName,
     industry: values.industry,
-    employees: parseInt(values.companySize.split('-')[0])
+    employees: parseInt(values.companySize.split('-')[0]),
+    businessLogo: props.businessInfo.businessLogo,
+    document: props.businessInfo.document,
+    documentName: documentName.value,
+    documentSize: documentSize.value,
   });
   
   // Emit next step

@@ -21,6 +21,9 @@ interface BusinessInfo {
   industry: string
   employees: number
   businessLogo?: string
+  document?: string
+  documentName?: string
+  documentSize?: string
   website: string
   description: string
   address: string
@@ -62,9 +65,9 @@ export const useOnboardingStore = defineStore('onboarding', {
         industry: '',
         employees: 0,
         businessLogo: '',
-        website: '',
-        description: '',
-        address: ''
+        document: '',
+        documentName: '',
+        documentSize: '',
       },
       isVerified: false,
       isSubmitted: false,
@@ -76,7 +79,6 @@ export const useOnboardingStore = defineStore('onboarding', {
   actions: {
     saveToLocalStorage() {
       localStorage.setItem('onboardingState', JSON.stringify(this.$state))
-      console.log("Saved to local storage", localStorage.getItem('onboardingState'))
     },
 
     reset() {
@@ -94,9 +96,9 @@ export const useOnboardingStore = defineStore('onboarding', {
         industry: '',
         employees: 0,
         businessLogo: '',
-        website: '',
-        description: '',
-        address: ''
+        document: '',
+        documentName: '',
+        documentSize: '',
       }
       this.isVerified = false
       this.isSubmitted = false
@@ -157,7 +159,6 @@ export const useOnboardingStore = defineStore('onboarding', {
     },
 
     verifyIdentity(code: string) {
-      console.log(code, "(*&*^&*^")
       this.isLoading = true
       this.error = null
       
